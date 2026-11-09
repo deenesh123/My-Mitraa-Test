@@ -1,0 +1,50 @@
+# ==============================================================================
+# MyMitraa TaskFlow — Shared Spring Boot Application Configuration
+# Targets: Spring Boot 3.3.4 / Java 17 / MongoDB
+# Active Profile is determined by SPRING_PROFILES_ACTIVE (default: dev)
+# ==============================================================================
+
+spring:
+  profiles:
+    default: dev
+  application:
+    name: mymitraa-taskflow
+  main:
+    allow-circular-references: true
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+      enabled: true
+  mail:
+    host: ${ZOHO_SMTP_HOST:smtp.zoho.com}
+    port: ${ZOHO_SMTP_PORT:465}
+    username: ${ZOHO_SMTP_USER:}
+    password: ${ZOHO_SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: false
+          ssl:
+            enable: true
+            trust: "*"
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+server:
+  servlet:
+    context-path: /
+
+mymitraa:
+  security:
+    jwt:
+      expiration-ms: ${JWT_EXPIRATION:86400000} # 24 hours
+  mail:
+    from-email: ${ZOHO_FROM_EMAIL:notifications@mymitraa.com}
+    from-name: ${ZOHO_FROM_NAME:MY MiTRAA TaskFlow}
+
+jwt:
+  expiration: ${JWT_EXPIRATION:86400000}

@@ -1,0 +1,1668 @@
+# MASTER PROMPT — MYMITRAA TASKFLOW
+## Complete Production Readiness, Authentication, JWT, Email, MongoDB, API Integration, Security, Testing and Hostinger Deployment Preparation
+
+You are working on my existing application:
+
+**Product:** MyMitraa TaskFlow  
+**GitHub repository:** `deenesh123/MyMitraa-TaskFlow`  
+**Working branch:** `production-readiness`  
+**Production domain:** `https://task.mitratechgroup.com`
+
+Your task is to inspect, correct, secure, and prepare the EXISTING MyMitraa TaskFlow application for production deployment on my Hostinger VPS.
+
+This is an existing application with frontend and backend code. This is NOT a request to create a new application or rebuild the project.
+
+You must work carefully, preserve all existing functionality, and make only necessary, justified changes.
+
+---
+
+# SECTION 1 — NON-NEGOTIABLE PROJECT RULES
+
+These rules apply to the entire task.
+
+1. Do not rebuild the application from scratch.
+2. Do not replace the existing UI with a new template.
+3. Do not redesign the existing application unnecessarily.
+4. Do not remove existing modules, pages, components, features, navigation, forms, dashboards, tables, workflows, or functionality.
+5. Do not remove existing API contracts or change response formats unnecessarily.
+6. Preserve existing business logic, permissions, roles, authentication behavior, relationships, and data structures.
+7. Preserve the existing application branding, layout, styling, and responsive behavior.
+8. Do not introduce paid APIs, paid services, or unnecessary external dependencies.
+9. Do not introduce new databases.
+10. Do not introduce SQL persistence, H2, MySQL, PostgreSQL, JPA, Hibernate, Firebase, or Supabase.
+11. MongoDB must remain the ONLY application database.
+12. Do not replace real backend operations with mock responses.
+13. Do not simulate successful authentication, database writes, email delivery, or production API operations.
+14. Never silently hide backend errors.
+15. Never expose credentials, passwords, JWTs, private keys, database connection strings, or SMTP secrets.
+16. Do not modify GitHub `main`.
+17. Work only on the `production-readiness` branch.
+18. Do not force-push, reset, overwrite, or delete existing project files.
+19. Do not deploy anything to my VPS.
+20. Do not modify DNS, Nginx, SSL certificates, existing websites, or other VPS services.
+
+If you identify a change that could affect existing functionality or data, explain the impact before making it.
+
+## Required working method
+
+Work in clearly separated phases.
+
+For each phase:
+
+1. Inspect the existing implementation.
+2. Identify the exact problem.
+3. Explain the proposed correction.
+4. Make the smallest necessary code changes.
+5. Inspect the resulting changes.
+6. Run the tests or checks supported by the environment.
+7. Report the actual results.
+8. Identify anything that still requires manual verification.
+
+Do not mark a phase complete simply because code was generated.
+
+Do not proceed with destructive or architecture-changing work without my approval.
+
+---
+
+# SECTION 2 — EXISTING PROJECT ARCHITECTURE
+
+Preserve the existing technology stack unless a genuine compatibility issue requires a change.
+
+## Frontend
+
+- React 19
+- TypeScript
+- Vite 8
+- Tailwind CSS v4
+- Existing React components and application structure
+- Existing API client and application routing
+- Existing dashboards, modules, tables, forms, and UI components
+
+The frontend is located in the repository root, not in a separate `frontend` directory.
+
+Important existing paths include:
+
+- `src/`
+- `src/api/client.ts`
+- `src/App.tsx`
+- `src/server/apiRouter.ts`
+- `src/pages/`
+- `src/components/`
+- `server.ts`
+- `vite.config.ts`
+- `package.json`
+
+Inspect the actual repository before assuming paths or file contents.
+
+## Backend
+
+- Java 17 target
+- Spring Boot 3.3.4
+- Maven
+- Spring Web
+- Spring Security
+- Spring Data MongoDB
+- Spring Validation
+- Spring Mail
+- JWT authentication
+- Existing controllers, services, repositories, models, and security configuration
+
+Backend directory:
+
+`backend/mymitraa_taskflow`
+
+Java base package:
+
+`com.mymitraa.taskflow`
+
+Application name:
+
+`MyMitraa TaskFlow`
+
+MongoDB database:
+
+`mymitraa_taskflow`
+
+Preserve the existing controllers, services, repository behavior, API contracts, role permissions, and business logic.
+
+---
+
+# SECTION 3 — GITHUB AND CHANGE PRESERVATION
+
+The current GitHub working branch is:
+
+`production-readiness`
+
+The following commits already exist:
+
+- `46a3b81` — Fix backend security test configuration and integration tests
+- `229ee44` — Remove accidental Git diff file
+
+The first commit contains 11 intended modified project files:
+
+- `WebSecurityConfiguration.java`
+- `AuthenticationTest.java`
+- `RegistrationSecurityTest.java`
+- `AuditLogControllerTest.java`
+- `BugControllerTest.java`
+- `LeadControllerTest.java`
+- `ProjectControllerTest.java`
+- `UserControllerTest.java`
+- `MongoDbIntegrationTest.java`
+- `RoleSecurityTest.java`
+- `application-test.yml`
+
+These changes must be preserved.
+
+Do not revert them.
+
+Do not recreate the accidental file:
+
+`witch -c production-readiness`
+
+Do not switch to `main`.
+
+Before editing, inspect the current branch and the repository's actual status if Git access is available.
+
+If this is a snapshot import rather than a live GitHub-linked workspace, clearly disclose that fact. Do not claim that changes have been synchronized with GitHub unless the integration confirms it.
+
+---
+
+# SECTION 4 — AUTHENTICATION AND LOGIN CORRECTIONS
+
+This is a critical production-readiness requirement.
+
+Inspect the complete authentication flow across:
+
+- `AuthPage`
+- `src/api/client.ts`
+- `src/App.tsx`
+- `AuthController.java`
+- `JwtTokenUtil.java`
+- `JwtAuthenticationFilter.java`
+- `WebSecurityConfiguration.java`
+- Related user repositories, services, and security classes
+
+The existing Spring Boot backend already implements:
+
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `GET /api/auth/current`
+- `POST /api/auth/change-password`
+- `POST /api/auth/logout`
+
+Preserve these existing endpoint contracts wherever possible.
+
+## 4.1 Real authentication only
+
+The production application must authenticate against the Spring Boot backend.
+
+The frontend must never fabricate a successful login.
+
+The backend must verify:
+
+- Submitted username or email
+- Submitted password
+- Password hash using the existing password encoder
+- User existence
+- Account enabled status
+- Account active status
+- Existing role and authorization rules
+
+Invalid credentials must return a proper HTTP 401 response.
+
+Disabled or inactive accounts must not authenticate.
+
+Never generate a fake user after a failed login.
+
+Never use an automatically supplied default password.
+
+Remove the frontend fallback:
+
+`password || 'Password@123'`
+
+The password must be explicitly supplied by the user.
+
+## 4.2 Username and email login
+
+The login screen should support both username and email.
+
+The frontend must send the actual username or email to the backend.
+
+Do not invent email addresses using domains such as:
+
+`mymitraa.internal`
+
+Do not hardcode any personal email address as a username conversion fallback.
+
+The backend should continue accepting the existing username/email login request format.
+
+## 4.3 Demo accounts
+
+Remove or disable any production demo-account switcher that inserts hardcoded passwords or bypasses normal authentication.
+
+If demo accounts are retained for local development, isolate them strictly to development or preview environments.
+
+Never expose demo passwords in production.
+
+## 4.4 Registration
+
+Registration must:
+
+- Validate required fields.
+- Validate email format.
+- Validate password requirements.
+- Prevent duplicate accounts.
+- Hash passwords with BCrypt.
+- Preserve the existing Employee registration policy.
+- Never return password hashes.
+- Never automatically authenticate a newly registered user unless a deliberately approved and properly secured backend flow supports it.
+
+After successful registration, show an accurate success message and direct the user to log in.
+
+Do not fabricate an authenticated session.
+
+## 4.5 Current user verification
+
+The frontend must verify the current authenticated user through:
+
+`GET /api/auth/current`
+
+A localStorage flag such as `mitraa_is_auth` must never be treated as sufficient proof of authentication.
+
+On application startup:
+
+1. Check whether a valid session token exists.
+2. Call the backend current-user endpoint.
+3. If verification succeeds, load the actual user and permissions.
+4. If verification fails, clear the invalid session and show the login screen.
+
+Do not grant access based only on locally stored user information.
+
+---
+
+# SECTION 5 — JWT SECURITY AND 24-HOUR EXPIRATION
+
+This section is mandatory.
+
+## 5.1 Dynamic JWT generation
+
+JWTs must be generated dynamically by the Spring Boot backend after successful authentication.
+
+Every successful login must produce a fresh signed JWT.
+
+Never use:
+
+- Static JWTs
+- Demo JWTs
+- Placeholder JWTs
+- Hardcoded authentication tokens
+- Fabricated frontend tokens
+
+Remove the existing placeholder token from:
+
+`src/api/client.ts`
+
+The existing placeholder resembles:
+
+`Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mitraa-taskflow-user-session`
+
+This must never be used as a real authentication credential.
+
+## 5.2 JWT expiration must be exactly 24 hours
+
+Set and enforce the backend JWT expiration to 24 hours.
+
+Target configuration:
+
+`JWT_EXPIRATION=86400000`
+
+This is milliseconds.
+
+Inspect `JwtTokenUtil.java` and all related configuration before modifying it.
+
+Ensure that:
+
+- The signing timestamp is generated at login.
+- The expiration timestamp is exactly 24 hours after issuance.
+- The JWT signature is validated.
+- The expiration claim is validated.
+- Expired JWTs are rejected.
+- Invalid JWTs are rejected.
+- Tampered JWTs are rejected.
+- Missing JWTs are rejected for protected endpoints.
+
+Do not rely on a frontend countdown to enforce expiration.
+
+The backend must independently reject expired JWTs with HTTP 401.
+
+## 5.3 JWT storage
+
+Use `sessionStorage` for the browser token if compatible with the existing authentication design.
+
+Do not store JWTs in localStorage.
+
+Do not store passwords in browser storage.
+
+Do not store authentication credentials in URL parameters.
+
+The frontend must:
+
+- Save the backend-issued JWT only after successful login.
+- Normalize the Bearer prefix so it is never duplicated.
+- Automatically attach the token to protected API requests.
+- Remove the token on logout.
+- Remove invalid or expired tokens after a 401 response.
+- Redirect to the login screen after session expiration.
+
+Do not silently renew an expired JWT.
+
+Do not invent refresh-token behavior unless the backend already implements a properly secured refresh-token architecture.
+
+## 5.4 Never display JWTs
+
+This requirement is extremely important.
+
+NEVER display:
+
+- Full JWT
+- Partial JWT
+- First half of JWT
+- Last half of JWT
+- JWT prefix
+- JWT suffix
+- JWT signature
+- JWT payload
+
+Do not show a masked or partially visible token in the UI.
+
+The user should never need to copy a JWT manually.
+
+The frontend should send the token automatically in the Authorization header.
+
+The UI may display:
+
+- Session active
+- Session expired
+- Session expiration time
+- Signed-in username
+- Session status
+
+It must never display the actual token.
+
+## 5.5 Token leakage prevention
+
+Never log or expose JWTs in:
+
+- Browser console
+- Server console
+- Application logs
+- Error messages
+- API response messages
+- Analytics
+- Email content
+- Audit log details
+- Debugging interfaces
+- Frontend notifications
+
+Avoid logging complete Authorization headers.
+
+Sanitize exceptions and API responses.
+
+## 5.6 Logout
+
+Logout must clear the frontend token and session state even if the backend logout request fails.
+
+Do not leave the user authenticated in the frontend after logout.
+
+## 5.7 Authentication test coverage
+
+Add or update tests for:
+
+1. Successful login generates a fresh JWT.
+2. Two successful logins generate different tokens.
+3. JWT expiration is 24 hours.
+4. Valid JWT accesses protected endpoints.
+5. Expired JWT returns HTTP 401.
+6. Invalid JWT returns HTTP 401.
+7. Tampered JWT returns HTTP 401.
+8. Missing JWT returns HTTP 401 for protected endpoints.
+9. Logout clears frontend session state.
+10. Registration does not expose password hashes.
+11. Password is never stored in browser storage.
+12. No frontend component displays the JWT.
+13. No application log exposes the JWT.
+
+Do not weaken security merely to make tests pass.
+
+---
+
+# SECTION 6 — PRODUCTION MOCK DATA AND API ISOLATION
+
+The existing project contains a mock Express API implementation.
+
+Important files:
+
+- `server.ts`
+- `src/server/apiRouter.ts`
+- `src/api/mockData.ts`
+- `src/api/client.ts`
+
+The Express mock router contains in-memory data for:
+
+- Tasks
+- Meetings
+- Leaves
+- Weekly updates
+- Documents
+- Dropdowns
+- Users
+- Projects
+- Leads
+- Bugs
+- Test cases
+- Audit logs
+- Email configuration
+- Email logs
+
+This implementation may be useful for preview or local development.
+
+It must never act as a production database or production authentication service.
+
+## 6.1 Production isolation
+
+Production must use the real Spring Boot backend and MongoDB.
+
+Set production behavior so that:
+
+- API mode is production.
+- Mock fallback is disabled.
+- Business reads never silently return mock data.
+- Business writes never use mock data.
+- Authentication never uses mock users.
+- Database operations never succeed through in-memory arrays.
+
+Recommended production frontend settings:
+
+`VITE_API_MODE=production`
+
+`VITE_ENABLE_MOCK_FALLBACK=false`
+
+## 6.2 Inspect server.ts
+
+The existing `server.ts` currently:
+
+- Runs Express on port 3000.
+- Proxies API requests to Spring Boot when configured.
+- Attaches the mock API router.
+- Falls back to mock reads when the backend is unavailable or returns certain errors.
+
+This fallback behavior must not be exposed in production.
+
+Preferred production architecture:
+
+1. Nginx serves the compiled Vite `dist` files.
+2. Nginx proxies `/api/` directly to Spring Boot.
+3. Spring Boot handles authentication, authorization, APIs, and database operations.
+4. MongoDB stores all persistent application data.
+
+If the Node/Express server is still required for a legitimate application feature, remove its production mock API exposure and make backend failures fail closed.
+
+Do not remove functionality without verifying whether the frontend depends on it.
+
+## 6.3 API failure handling
+
+If the Spring Boot backend is unavailable:
+
+- Show an appropriate service-unavailable message.
+- Do not return fabricated records.
+- Do not pretend writes succeeded.
+- Do not silently substitute mock records.
+
+Production read and write failures must be truthful.
+
+---
+
+# SECTION 7 — API CONTRACT AND FRONTEND INTEGRATION
+
+Inspect every frontend API call and compare it with the actual Spring Boot controller mappings.
+
+Important known mismatch:
+
+The frontend `ApiClient.email.updateConfig` sends:
+
+`POST /api/email/config`
+
+The existing backend does not currently implement this endpoint.
+
+The frontend expects:
+
+- host
+- port
+- user
+- from
+- isConfigured
+- hasPassword
+
+The backend currently returns:
+
+- smtpHost
+- smtpPort
+- fromName
+- fromEmail
+- configured
+
+Reconcile this mismatch.
+
+Do not invent backend routes.
+
+Do not fabricate API responses.
+
+Do not change existing API contracts unnecessarily.
+
+If an endpoint is missing, decide whether the correct solution is to:
+
+1. Implement the endpoint securely in Spring Boot, or
+2. Correct the frontend to use the existing supported backend functionality.
+
+All API responses should be handled correctly.
+
+The frontend must inspect:
+
+- HTTP status
+- Response body
+- Application-level success flag
+- Validation errors
+- Authentication errors
+- Backend failures
+
+Do not show success notifications merely because a request was initiated.
+
+---
+
+# SECTION 8 — ZOHO SMTP AND REAL EMAIL DELIVERY
+
+Email functionality must be truthful and production-ready.
+
+The application has existing email-related functionality, including:
+
+- Email configuration UI
+- Email readiness/test endpoint
+- Task owner email
+- Feedback history
+- Weekly update email
+- Email logs
+
+Inspect the entire email implementation before modifying it.
+
+Important existing files include:
+
+- `EmailController.java`
+- `OptimaWeeklyUpdateTrackerServiceImpl.java`
+- `TaskOwnerEmailServiceImpl.java`
+- `TaskOwnerEmailController.java`
+- `FeedbackHistoryServiceImpl.java`
+- Related repositories and DTOs
+- `src/pages/email/EmailZohoManagement.tsx`
+- `src/api/client.ts`
+
+## 8.1 Real SMTP configuration
+
+Use Spring Boot's existing Spring Mail support.
+
+Support environment-driven Zoho SMTP configuration.
+
+Recommended environment variable names:
+
+- `ZOHO_SMTP_HOST`
+- `ZOHO_SMTP_PORT`
+- `ZOHO_SMTP_USER`
+- `ZOHO_SMTP_PASSWORD`
+- `ZOHO_FROM_NAME`
+- `ZOHO_FROM_EMAIL`
+
+Map these variables to Spring Mail properties as appropriate.
+
+Do not hardcode SMTP credentials.
+
+Do not expose the SMTP password in API responses.
+
+Do not commit SMTP credentials to GitHub.
+
+Do not assume the Zoho SMTP hostname or port without allowing configuration for the user's actual Zoho account and region.
+
+Use TLS/STARTTLS settings appropriate for the configured Zoho SMTP endpoint.
+
+Add reasonable connection and read timeouts.
+
+Handle SMTP authentication and delivery errors securely.
+
+## 8.2 Shared email service
+
+Inspect the existing mail implementation.
+
+Where appropriate, implement or consolidate a reusable backend email service responsible for:
+
+- Creating messages.
+- Setting the configured sender.
+- Validating recipient addresses.
+- Sending text or HTML email.
+- Handling SMTP exceptions.
+- Recording delivery results.
+- Preventing passwords or secrets from entering logs.
+
+Reuse this service in existing email workflows.
+
+Do not duplicate SMTP implementation unnecessarily.
+
+## 8.3 Email configuration endpoint
+
+The email configuration screen should show safe configuration information.
+
+It may display:
+
+- SMTP host
+- SMTP port
+- Sender email
+- Sender name
+- Configured / Not configured
+- Password configured / Not configured
+
+It must never return the SMTP password.
+
+Do not implement unrestricted SMTP credential modification through a normal user-facing endpoint.
+
+If an administrator-only configuration update endpoint is genuinely necessary, design it with explicit authorization and safe secret handling.
+
+Otherwise, keep production SMTP configuration environment-driven and make the UI read-only.
+
+Correct the existing frontend/backend response-field mismatch.
+
+## 8.4 Email test endpoint
+
+The existing backend `POST /api/email/test` currently returns readiness information rather than actually sending an email.
+
+Correct this behavior.
+
+When the administrator explicitly clicks the Test Email button:
+
+1. Validate the requested recipient.
+2. Verify SMTP configuration.
+3. Attempt actual email delivery.
+4. Return success only if the mail service successfully accepts the message.
+5. Return an accurate failure result if delivery cannot be attempted.
+
+Never send test emails automatically during page loading.
+
+Never simulate email delivery.
+
+A successful SMTP send call does not guarantee that the recipient received or read the email. Describe the result accurately.
+
+## 8.5 Weekly update email
+
+The existing weekly email service has a dangerous behavior:
+
+If `JavaMailSender` is unavailable, it may return a successful simulated result.
+
+Remove this behavior.
+
+A missing mail sender must result in a truthful failure or not-configured response.
+
+If sending fails:
+
+- Do not return success.
+- Return an appropriate HTTP error.
+- Include a safe error code/message.
+- Do not expose SMTP credentials or raw sensitive exception details.
+
+The frontend must inspect the real result before showing success.
+
+## 8.6 Task owner email
+
+The existing `TaskOwnerEmailServiceImpl` saves task-owner email information to MongoDB but does not necessarily send a notification.
+
+Inspect its actual behavior.
+
+If the existing business requirement includes sending an email:
+
+- Implement real delivery using the shared mail service.
+- Preserve the MongoDB record.
+- Record the delivery status.
+- Do not claim an email was sent when it was only saved.
+
+If email delivery is not part of that operation, update the UI wording to say that the email record or assignment was saved.
+
+## 8.7 Feedback history email
+
+Inspect the complete `FeedbackHistoryServiceImpl`, not only a partial code excerpt.
+
+Determine exactly when feedback emails are sent.
+
+Preserve the existing feedback history behavior and ensure email success/failure is recorded accurately.
+
+## 8.8 Email logs
+
+The current email logs implementation may return fabricated sample data.
+
+Do not display fake historical delivery records in production.
+
+If email logs are supported, persist genuine email attempt information in MongoDB.
+
+Log appropriate information such as:
+
+- Recipient
+- Subject
+- Attempt timestamp
+- Sending workflow
+- Delivery attempt status
+- Safe failure code
+
+Do not log:
+
+- SMTP passwords
+- JWTs
+- Full message secrets
+- Unnecessary personal data
+
+If persistent email logging is not implemented, show an honest empty or unavailable state rather than invented historical records.
+
+## 8.9 Email UI
+
+Inspect `EmailZohoManagement.tsx`.
+
+Fix cases where the UI shows success without inspecting the API response.
+
+Ensure:
+
+- Save operations report actual save results.
+- Test email reports actual delivery attempt results.
+- Weekly email reports actual delivery status.
+- Configuration shows the real backend configuration.
+- Loading states are correct.
+- Error messages are useful but do not expose secrets.
+
+---
+
+# SECTION 9 — MONGODB ONLY
+
+MongoDB is the only permitted application database.
+
+Database name:
+
+`mymitraa_taskflow`
+
+Production must use an externally supplied MongoDB connection string.
+
+Inspect:
+
+- MongoDB configuration
+- Repositories
+- Models
+- Database indexes
+- Relationships/references
+- Existing data access logic
+- Production profile
+- Test profile
+
+Do not add SQL dependencies or SQL persistence.
+
+Do not create a second application database.
+
+Do not use H2 or in-memory persistence as a substitute for production MongoDB.
+
+## 9.1 Database configuration
+
+Production must use:
+
+`MONGODB_URI`
+
+`MONGODB_DATABASE=mymitraa_taskflow`
+
+Do not hardcode credentials or connection strings.
+
+Do not expose database connection information in logs or API responses.
+
+Use a dedicated least-privilege MongoDB application user in production.
+
+Do not assume that an existing MongoDB instance is safe to reuse without inspection and approval.
+
+Do not delete, reset, drop, or overwrite any existing database.
+
+## 9.2 MongoDB indexes
+
+Inspect the existing entities and repository queries.
+
+Add only justified indexes for:
+
+- Login lookup
+- User email and username uniqueness
+- Frequently used task lookups
+- Project lookup
+- Audit history
+- Email logs, if implemented
+
+Preserve existing data.
+
+Do not add unique indexes until existing records have been checked for duplicates.
+
+Document required indexes and their creation process.
+
+## 9.3 Database migration and backup
+
+Provide production-safe MongoDB backup and restore scripts.
+
+Use MongoDB tools such as:
+
+- `mongodump`
+- `mongorestore`
+
+Scripts must:
+
+- Require an explicitly configured connection string.
+- Avoid embedding passwords.
+- Support backup and restore of the intended database.
+- Avoid accidentally overwriting unrelated databases.
+- Explain restore confirmation requirements.
+- Record backup date and destination.
+- Document how to verify a backup.
+
+Provide a MongoDB schema/data migration strategy where changes require it.
+
+Do not invent SQL migration scripts.
+
+---
+
+# SECTION 10 — PRODUCTION SPRING BOOT CONFIGURATION
+
+Inspect all Spring profiles.
+
+The backend must support:
+
+- `dev`
+- `test`
+- `prod`
+
+## 10.1 Development profile
+
+Development should support local development and a local MongoDB database.
+
+It may use development-only sample data where the existing application requires it.
+
+Never use development secrets in production.
+
+## 10.2 Test profile
+
+The test profile must use an isolated test database.
+
+It must not connect to production data.
+
+Preserve the current test profile fixes.
+
+## 10.3 Production profile
+
+The production profile must use externally supplied environment variables.
+
+Important variables include:
+
+`SPRING_PROFILES_ACTIVE=prod`
+
+`SERVER_PORT=8080`
+
+`MONGODB_URI`
+
+`MONGODB_DATABASE=mymitraa_taskflow`
+
+`JWT_SECRET`
+
+`JWT_EXPIRATION=86400000`
+
+`CORS_ALLOWED_ORIGINS=https://task.mitratechgroup.com`
+
+`UPLOAD_PATH=/var/data/mymitraa_uploads`
+
+`ZOHO_SMTP_HOST`
+
+`ZOHO_SMTP_PORT`
+
+`ZOHO_SMTP_USER`
+
+`ZOHO_SMTP_PASSWORD`
+
+`ZOHO_FROM_NAME`
+
+`ZOHO_FROM_EMAIL`
+
+Inspect actual property binding and use the correct names consistently.
+
+Do not assume every environment variable is already wired into the application.
+
+The production profile must fail safely if required security or database configuration is missing.
+
+Do not fall back to development credentials.
+
+Do not expose detailed stack traces or sensitive environment values.
+
+## 10.4 JWT secret
+
+Generate the production JWT secret outside source code.
+
+It must have sufficient cryptographic strength for the configured signing algorithm.
+
+Do not commit the real JWT secret.
+
+Do not put a real JWT secret in `.env.example`.
+
+Use placeholders in documentation.
+
+Do not print the secret in terminal logs.
+
+---
+
+# SECTION 11 — FRONTEND PRODUCTION BUILD AND CONFIGURATION
+
+Inspect the frontend environment configuration.
+
+Required production behavior:
+
+- `VITE_API_MODE=production`
+- `VITE_ENABLE_MOCK_FALLBACK=false`
+- Correct API routing
+- No development credentials
+- No mock login
+- No fake API success
+- No exposed server secrets
+
+The current frontend uses:
+
+`VITE_API_BASE_URL`
+
+`VITE_API_MODE`
+
+`VITE_ENABLE_MOCK_FALLBACK`
+
+Ensure the frontend communicates with the actual Spring Boot backend through the intended `/api/` routing.
+
+The production build must not depend on a development Vite server.
+
+Do not put private backend secrets into Vite environment variables because Vite variables are exposed to browser code.
+
+Review the existing `vite.config.ts`.
+
+Preserve the current frontend build configuration.
+
+The package manager and lock files must be inspected before installation.
+
+The repository currently contains `bun.lock`, and no `package-lock.json` was observed in the earlier inspection.
+
+Do not overwrite or regenerate lock files unnecessarily.
+
+Do not introduce additional package managers or unnecessary dependencies.
+
+---
+
+# SECTION 12 — SECURITY HARDENING
+
+Inspect the complete backend and frontend security implementation.
+
+Check:
+
+1. Password hashing.
+2. Authentication.
+3. JWT signature and expiration validation.
+4. Role-based access control.
+5. User authorization.
+6. CORS restrictions.
+7. CSRF configuration in context of the stateless API.
+8. HTTP security headers.
+9. Input validation.
+10. File upload restrictions.
+11. Path traversal protection.
+12. Sensitive error messages.
+13. API response sanitization.
+14. Secrets and environment variables.
+15. MongoDB least-privilege access.
+16. SMTP secret handling.
+17. Production mock isolation.
+18. Logging and audit records.
+
+Preserve the existing role hierarchy and permissions.
+
+Do not weaken security to make frontend functionality work.
+
+Do not allow a normal administrator to perform operations reserved for the Super Admin.
+
+Do not expose password hashes, JWTs, SMTP passwords, database credentials, or internal secrets.
+
+Keep production CORS restricted to the actual approved domain.
+
+Do not use unrestricted wildcard CORS with credentials.
+
+---
+
+# SECTION 13 — FILE UPLOADS AND STORAGE
+
+Inspect all existing upload functionality.
+
+The production upload path should be configurable through:
+
+`UPLOAD_PATH=/var/data/mymitraa_uploads`
+
+Preserve existing file upload behavior.
+
+Check:
+
+- File size limits.
+- Allowed extensions.
+- MIME validation.
+- Safe file names.
+- Path traversal prevention.
+- Upload permissions.
+- Download authorization.
+- File access control.
+
+Do not store important uploaded business files only in a temporary directory.
+
+Do not remove existing file upload or download features.
+
+Document persistent storage requirements.
+
+---
+
+# SECTION 14 — FRONTEND AND BACKEND FUNCTIONALITY REGRESSION
+
+Inspect the complete application and verify that existing functionality remains intact.
+
+Preserve all existing modules and screens.
+
+Examples include:
+
+- Dashboard
+- User management
+- Role management
+- Tasks
+- Projects
+- Subtasks
+- Meetings
+- Leaves
+- Weekly updates
+- Feedback history
+- Task owner email
+- Dropdown management
+- Documents
+- Bugs
+- Leads
+- Test cases
+- Audit logs
+- Email management
+- Notifications
+- Existing administrative features
+
+This list is not permission to rebuild or replace modules.
+
+Use the existing code and existing API implementations.
+
+Do not delete features because they are difficult to connect.
+
+If an existing frontend feature has no backend endpoint, identify it clearly and propose a compatible implementation.
+
+Do not create fake persistent behavior.
+
+---
+
+# SECTION 15 — TESTING AND VERIFICATION
+
+Testing must be real and independently verifiable.
+
+## 15.1 Existing backend test baseline
+
+The local Windows TEST clone previously passed 50 backend tests with:
+
+- 0 failures
+- 0 errors
+- 0 skipped
+- Maven BUILD SUCCESS
+
+The previously verified groups included:
+
+- AuthenticationTest
+- RegistrationSecurityTest
+- AuditLogControllerTest
+- BugControllerTest
+- LeadControllerTest
+- ProjectControllerTest
+- UserControllerTest
+- MongoDbIntegrationTest
+- RoleSecurityTest
+
+The local test command used the test profile:
+
+`mvn "-Dspring.profiles.active=test" test`
+
+Preserve the existing test corrections.
+
+Do not claim that the 50 tests still pass after your modifications unless they have actually been rerun in a valid Maven environment.
+
+Google AI Studio is not the authoritative Maven verification environment.
+
+The final Maven verification must be run independently on the local Windows TEST clone.
+
+## 15.2 Backend checks
+
+Run or prepare tests for:
+
+- Authentication
+- Registration
+- JWT generation
+- JWT expiration
+- Invalid token rejection
+- Expired token rejection
+- RBAC
+- Super Admin permissions
+- Admin permissions
+- User permissions
+- MongoDB integration
+- API validation
+- File uploads
+- Email sending
+- Email failure handling
+- Production profile configuration
+
+Do not use production credentials or production database records in tests.
+
+## 15.3 Frontend checks
+
+Run available:
+
+`npm run lint`
+
+`npm run test`
+
+`npm run build`
+
+If the environment uses another supported package manager, preserve the existing lock file and explain the command used.
+
+Check:
+
+- TypeScript errors
+- React errors
+- API contract errors
+- Authentication flow
+- Session expiration
+- Mock fallback isolation
+- Email UI
+- Production build
+
+Do not claim a check passed if it was not executed.
+
+## 15.4 Final verification report
+
+Provide:
+
+| Area | Status | Evidence |
+|---|---|---|
+| Authentication | | |
+| JWT 24-hour expiry | | |
+| JWT non-disclosure | | |
+| Registration | | |
+| RBAC | | |
+| MongoDB only | | |
+| Production profile | | |
+| Mock isolation | | |
+| SMTP configuration | | |
+| Real email sending | | |
+| Email logging | | |
+| Frontend lint | | |
+| Frontend tests | | |
+| Frontend build | | |
+| Backend Maven tests | | |
+| Production deployment readiness | | |
+
+Use these statuses:
+
+- PASS
+- FAIL
+- NOT TESTED
+- BLOCKED
+- REQUIRES MANUAL VERIFICATION
+
+Never mark untested functionality as PASS.
+
+---
+
+# SECTION 16 — PRODUCTION DEPLOYMENT ARCHITECTURE
+
+Prepare the code for a traditional Hostinger VPS deployment.
+
+Do not use Docker unless separately approved.
+
+The intended architecture is:
+
+Browser  
+↓  
+Nginx / HTTPS  
+↓  
+React production static files (`dist`)  
+↓  
+Nginx `/api/` reverse proxy  
+↓  
+Spring Boot application (`127.0.0.1:8080`)  
+↓  
+MongoDB database (`mymitraa_taskflow`)
+
+The intended production domain is:
+
+`https://task.mitratechgroup.com`
+
+The backend must not be publicly exposed unnecessarily.
+
+Use a dedicated Linux service user.
+
+Use systemd for the Spring Boot service.
+
+Keep MongoDB and Spring Boot bound to appropriate local interfaces.
+
+Use environment files with restricted permissions.
+
+Do not expose application secrets in Nginx configuration or frontend bundles.
+
+## Existing VPS protection
+
+The Hostinger VPS already hosts other websites and services.
+
+Do not modify or disrupt:
+
+- Existing company website.
+- Existing API services.
+- Existing DART services.
+- Existing educational portal.
+- Existing GCC portal.
+- Existing MongoDB instances.
+- Existing MySQL services.
+- Existing Redis services.
+- Existing Node services.
+- Existing Nginx virtual hosts.
+
+Do not stop or restart unrelated services.
+
+Do not use or modify existing MongoDB instances without identifying their owners and obtaining approval.
+
+Do not assume port availability.
+
+Do not overwrite an existing Nginx configuration.
+
+Prepare instructions for a new, isolated TaskFlow configuration only.
+
+All VPS changes will be handled separately by the owner after inspecting the current server configuration.
+
+---
+
+# SECTION 17 — PRODUCTION DOCUMENTATION DELIVERABLES
+
+Create or update a `docs/` directory with accurate documentation based on the actual implementation.
+
+Required documents:
+
+## 17.1 Project Technical Documentation
+
+Suggested file:
+
+`docs/PROJECT_TECHNICAL_DOCUMENTATION.md`
+
+Include:
+
+- Project overview.
+- Architecture.
+- Frontend technologies.
+- Backend technologies.
+- Package structure.
+- API architecture.
+- Authentication.
+- Authorization and RBAC.
+- MongoDB models and repositories.
+- Email architecture.
+- File storage.
+- Environment configuration.
+- Logging and auditing.
+- Build instructions.
+
+## 17.2 Production Deployment Guide
+
+Suggested file:
+
+`docs/PRODUCTION_DEPLOYMENT_GUIDE.md`
+
+Include:
+
+- VPS prerequisites.
+- Java installation/version requirements.
+- Maven build requirements.
+- MongoDB prerequisites.
+- Node/build requirements if needed.
+- Frontend production build.
+- Backend JAR build.
+- Linux directory layout.
+- Linux service user.
+- Environment configuration.
+- systemd service.
+- Nginx reverse proxy.
+- HTTPS/SSL procedure.
+- Startup and shutdown.
+- Health checks.
+- Logs.
+- Troubleshooting.
+- Rollback procedure.
+
+## 17.3 Environment Configuration Document
+
+Suggested file:
+
+`docs/ENVIRONMENT_CONFIGURATION.md`
+
+Document every required environment variable:
+
+- Name.
+- Purpose.
+- Required or optional.
+- Example placeholder.
+- Development/test/production usage.
+- Whether it contains a secret.
+
+Never put real credentials into documentation.
+
+## 17.4 MongoDB Backup and Restore Guide
+
+Suggested file:
+
+`docs/MONGODB_BACKUP_RESTORE.md`
+
+Include:
+
+- Backup procedure.
+- Restore procedure.
+- Database verification.
+- Backup retention.
+- Safe handling of backup files.
+- Migration procedure.
+- Recovery considerations.
+
+## 17.5 API Documentation
+
+Suggested file:
+
+`docs/API_DOCUMENTATION.md`
+
+Document actual controller mappings, request fields, response fields, authentication requirements, role permissions, and error responses.
+
+Do not invent endpoints.
+
+## 17.6 Operations and Security Guide
+
+Suggested file:
+
+`docs/PRODUCTION_OPERATIONS_SECURITY.md`
+
+Include:
+
+- Secret rotation.
+- JWT configuration.
+- SMTP configuration.
+- User management.
+- Log review.
+- Backup verification.
+- Application restart.
+- Security checks.
+- Incident recovery.
+
+## 17.7 Example environment file
+
+Maintain `.env.example` with placeholders only.
+
+Ensure `.env`, private keys, credentials, database dumps, JWT secrets, and SMTP passwords are excluded from Git.
+
+Do not include production credentials in any generated document.
+
+---
+
+# SECTION 18 — BUILD AND RELEASE REQUIREMENTS
+
+Prepare the project for independent production build and deployment.
+
+Backend:
+
+`mvn clean package`
+
+Frontend:
+
+`npm run lint`
+
+`npm run test`
+
+`npm run build`
+
+Use the correct existing package manager and lock file.
+
+Confirm that the backend JAR and frontend `dist` directory are generated correctly.
+
+Do not deploy from the development server.
+
+Do not commit build output unless the repository's existing conventions explicitly require it.
+
+Do not include:
+
+- `.env`
+- Production credentials
+- JWT secrets
+- SMTP passwords
+- Database dumps
+- Private keys
+- Local test backups
+- Temporary logs
+- Personal data
+
+Do not modify the GitHub main branch.
+
+Do not push or merge automatically.
+
+After changes, provide the exact changed-file list and a clear Git diff summary.
+
+---
+
+# SECTION 19 — REQUIRED EXECUTION PHASES
+
+Execute in this order.
+
+### PHASE 0 — Repository verification
+
+- Verify repository identity.
+- Verify branch `production-readiness`.
+- Verify source structure.
+- Verify the existing changes are present.
+- Confirm whether the workspace is GitHub-linked or an imported snapshot.
+- Report the current state.
+
+Do not modify code during this phase.
+
+### PHASE 1 — Full source inspection
+
+Inspect:
+
+- Frontend authentication.
+- API client.
+- Express mock router.
+- Node server.
+- Spring Security.
+- JWT implementation.
+- Auth controller.
+- Production/dev/test profiles.
+- MongoDB configuration.
+- Email controllers and services.
+- Feedback history.
+- Weekly update email.
+- Task owner email.
+- Frontend email UI.
+- Environment configuration.
+- Existing tests.
+
+Produce a detailed problem report.
+
+Do not start rewriting files before the inspection report.
+
+### PHASE 2 — Authentication and JWT corrections
+
+Implement the backend-issued dynamic JWT flow.
+
+Enforce 24-hour expiration.
+
+Remove placeholder tokens.
+
+Fix username/email login.
+
+Fix current-user validation.
+
+Fix logout.
+
+Prevent all JWT display and leakage.
+
+Implement tests.
+
+### PHASE 3 — API and mock isolation
+
+Fix frontend/backend endpoint mismatches.
+
+Remove production mock fallback.
+
+Ensure production uses the real Spring Boot backend.
+
+Preserve development preview behavior where safe.
+
+### PHASE 4 — SMTP and email corrections
+
+Implement actual environment-driven Zoho SMTP configuration.
+
+Correct the test email endpoint.
+
+Correct weekly email success/failure behavior.
+
+Inspect feedback history delivery.
+
+Correct task owner email behavior.
+
+Remove fabricated email logs.
+
+Fix the email UI.
+
+### PHASE 5 — Production MongoDB and Spring configuration
+
+Validate the production profile.
+
+Enforce MongoDB-only persistence.
+
+Verify the environment variables.
+
+Ensure no development secret fallback reaches production.
+
+Check database indexes and upload paths.
+
+### PHASE 6 — Security and regression checks
+
+Inspect RBAC and security.
+
+Test all authentication and authorization paths.
+
+Check existing application modules for regressions.
+
+Run supported frontend checks.
+
+Report backend Maven tests as requiring independent local verification if not executed in a valid Maven environment.
+
+### PHASE 7 — Documentation
+
+Create all requested technical, deployment, environment, API, backup, restore, and security documents.
+
+Ensure documentation reflects the actual implementation.
+
+### PHASE 8 — Final readiness report
+
+Provide:
+
+1. Summary of changes.
+2. Complete modified-file list.
+3. New files created.
+4. API changes, if any.
+5. Database changes, if any.
+6. Security improvements.
+7. JWT verification results.
+8. Email verification results.
+9. Test results.
+10. Build results.
+11. Remaining blockers.
+12. Manual verification steps.
+13. GitHub synchronization status.
+14. Production deployment readiness assessment.
+
+Do not deploy.
+
+Do not merge into `main`.
+
+Do not push changes without my explicit approval.
+
+---
+
+# SECTION 20 — IMPORTANT EXISTING FINDINGS THAT MUST BE ADDRESSED
+
+The following issues were found in earlier source inspections. Reinspect them in the current branch rather than blindly assuming they remain unchanged.
+
+1. `src/api/client.ts` contains a placeholder JWT.
+2. The frontend does not currently complete the real JWT extraction and storage flow.
+3. The frontend attaches a placeholder Authorization header to API requests.
+4. The frontend login helper previously supplied a default password.
+5. `src/App.tsx` uses a localStorage authentication flag that must not be trusted as proof of a valid session.
+6. Registration previously set the authenticated user without receiving a JWT.
+7. Production Express routing can fall back to in-memory mock data for reads.
+8. `ApiClient.email.updateConfig` calls a backend endpoint that does not currently exist.
+9. Frontend and backend email configuration response fields differ.
+10. The email test endpoint previously returned readiness rather than actual delivery.
+11. The weekly email service previously returned simulated success if `JavaMailSender` was unavailable.
+12. The weekly email controller may return HTTP 200 even when sending fails.
+13. Task owner email currently saves a record but does not necessarily send an email.
+14. Feedback history email service requires complete inspection.
+15. The email log endpoint may return fabricated sample data.
+16. The production Spring configuration requires external MongoDB and JWT settings.
+17. The development profile has fallback JWT secrets and must never be used in production.
+18. Production SMTP configuration must be environment-driven.
+19. The frontend email page has success notifications that may not inspect the actual response.
+20. The existing MongoDB database must remain the only application database.
+
+---
+
+# FINAL INSTRUCTIONS
+
+Work on the existing MyMitraa TaskFlow application only.
+
+Do not rebuild it.
+
+Do not delete existing features.
+
+Do not weaken security.
+
+Do not introduce SQL or another persistence system.
+
+Do not fabricate authentication, email delivery, database operations, test results, or production readiness.
+
+Do not expose full or partial JWTs.
+
+JWT expiration must be enforced by the backend at exactly 24 hours.
+
+The application must use MongoDB as its only database.
+
+The production application must fail closed when the real backend is unavailable.
+
+The existing application must remain recognizable and functionally intact.
+
+**Start with PHASE 0 and PHASE 1 only.**
+
+First verify the repository, branch, and workspace synchronization state. Then inspect the actual code and produce the complete findings report.
+
+Do not modify application code until I review the inspection report and approve the implementation phases.
+
+My priority is a secure, reliable, fully functional MyMitraa TaskFlow application that I can independently build and deploy on my existing Hostinger VPS without disrupting any other hosted application.

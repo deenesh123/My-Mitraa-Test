@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MiTRAA TaskFlow - Enterprise Project &amp; Task Management</title>
+    <meta name="description" content="Enterprise project and task management web application with comprehensive tracker modules, reporting, and 5-colour design system." />
+    <meta property="og:title" content="MiTRAA TaskFlow" />
+    <meta property="og:description" content="Enterprise project and task management web application with comprehensive tracker modules, reporting, and 5-colour design system." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+      // Gracefully prevent browser extension injection errors (e.g., MetaMask, adblockers, wallet providers) from interfering with the app
+      window.addEventListener('error', function(event) {
+        if (event.filename && event.filename.includes('chrome-extension://')) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+          return true;
+        }
+        if (event.message && (event.message.includes('MetaMask') || event.message.includes('inpage.js') || event.message.includes('ethereum'))) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+          return true;
+        }
+      }, true);
+
+      window.addEventListener('unhandledrejection', function(event) {
+        var reason = event.reason;
+        if (reason && (String(reason).includes('MetaMask') || (reason.stack && reason.stack.includes('chrome-extension://')))) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+        }
+      });
+    </script>
+  </head>
+  <body class="bg-[#F8F9FE] text-[#191627] antialiased selection:bg-[#7B3AEC]/20 selection:text-[#7B3AEC]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
